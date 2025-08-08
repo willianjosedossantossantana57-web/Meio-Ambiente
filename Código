@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bem-vindo ao Futuro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Botão vidro iOS */
+    #startBtn {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 1rem 2.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    #startBtn:hover {
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
+    }
+
+    /* Card inicial */
+    #mainContainer {
+      backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.5);
+      padding: 3rem 2.5rem;
+      border-radius: 2rem;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      margin: 12vh auto 0 auto;
+      transition: opacity 0.5s ease;
+    }
+    #mainContainer.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Ilha */
+    #headerIsland {
+      display: none;
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(25px);
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      max-width: 300px;
+      overflow: hidden;
+      white-space: nowrap;
+      z-index: 10;
+      user-select: none;
+    }
+    #headerIsland.expanded {
+      white-space: normal;
+      padding: 1rem 2rem;
+    }
+
+    /* Cards */
+    #cardsContainer {
+      display: none;
+      margin-top: 14rem;
+      width: 90%;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      user-select: none;
+    }
+    .card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(25px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 20px 24px;
+      text-align: center;
+      color: white;
+      cursor: pointer;
+      position: relative;
+      transition: box-shadow 0.3s ease;
+      user-select: none;
+    }
+    .card:hover {
+      box-shadow: 0 0 15px rgba(255,255,255,0.6);
+    }
+    .card h3 {
+      margin-bottom: 4px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .card p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* Overlay leve com apenas blur (sem cor sólida escura) */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: transparent;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      z-index: 90;
+      user-select: none;
+    }
+    #overlay.active {
+      display: block;
+    }
+
+    /* Card expandido que se move */
+    .expanded-card {
+      position: fixed !important;
+      z-index: 100;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 2rem 3rem;
+      color: white;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      cursor: default;
+      user-select: text;
+      transition: all 0.3s ease;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    /* Conteúdo expandido */
+    .expanded-card h3 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .expanded-card p {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Botão mudar fundo - estado inicial largo */
+    #bottomBar {
+      position: fixed;
+      bottom: 0;
+      right: 0; /* inicia no canto direito */
+      width: 140%; /* aumentei de 100% para 140% */
+      height: 5rem; /* aumentei de 3.5rem para 5rem */
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(15px);
+      padding: 1.2rem 2rem; /* ajustado para tamanho maior */
+      border-top: 1px solid rgba(255,255,255,0.6);
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      transition:
+        width 0.4s ease,
+        height 0.4s ease,
+        border-radius 0.4s ease,
+        bottom 0.4s ease,
+        right 0.4s ease,
+        padding 0.4s ease,
+        font-size 0.4s ease;
+      user-select: none;
+      border-radius: 0;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+
+    /* Botão mudar fundo - estado quadradinho */
+    #bottomBar.shrink {
+      width: 5rem; /* maior que 3.5rem */
+      height: 5rem; /* maior que 3.5rem */
+      border-radius: 12px;
+      bottom: 2rem;
+      right: 2rem; /* fica afastado do canto direito */
+      padding: 0;
+      font-size: 0;
+      border-top: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Ícone de + no botão quadradinho */
+    #bottomBar.shrink::after {
+      content: '+';
+      font-size: 2.5rem; /* aumentei o tamanho do + */
+      line-height: 5rem; /* para centralizar verticalmente */
+      color: white;
+      display: block;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela inicial -->
+  <main id="mainContainer">
+    <h1 class="text-3xl font-bold mb-4">Bem-vindo ao Futuro</h1>
+    <p class="mb-6">Descubra uma experiência única e transformadora que conecta você com a natureza e a tecnologia de forma harmoniosa.</p>
+    <button id="startBtn">Começar Agora</button>
+  </main>
+
+  <!-- Ilha -->
+  <div id="headerIsland">
+    <div class="title">Meio Ambiente</div>
+    <div class="subtitle">ele precisa de você...</div>
+  </div>
+
+  <!-- Cards -->
+  <section id="cardsContainer"></section>
+
+  <!-- Overlay -->
+  <div id="overlay"></div>
+
+  <!-- Barra inferior -->
+  <div id="bottomBar">Mudar fundo</div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const mainContainer = document.getElementById('mainContainer');
+    const headerIsland = document.getElementById('headerIsland');
+    const cardsContainer = document.getElementById('cardsContainer');
+    const overlay = document.getElementById('overlay');
+    const bottomBar = document.getElementById('bottomBar');
+
+    let expandedCard = null;
+
+    const cardsData = [
+      { title: "Impacto do Desmatamento", text: "Pesquisadores alertam que o desmatamento acelerado causa perda de biodiversidade e desequilíbrio climático." },
+      { title: "Como o Desmatamento Afeta o Clima", text: "O desmatamento contribui para o aumento das emissões de gases de efeito estufa, acelerando o aquecimento global." },
+      { title: "Secas no Planeta", text: "Estudos mostram que o desmatamento intensifica os períodos de seca, comprometendo a agricultura e o abastecimento de água." },
+      { title: "Preservação e Sustentabilidade", text: "Práticas sustentáveis e reflorestamento são essenciais para restaurar ecossistemas e garantir o futuro do planeta." },
+      { title: "Desmatamento e Biodiversidade", text: "A perda de habitat ameaça milhares de espécies, colocando em risco a diversidade da vida na Terra." },
+      { title: "Efeito Estufa", text: "A redução das áreas verdes diminui a absorção de CO2, agravando o efeito estufa e mudanças climáticas." }
+    ];
+
+    function createCards() {
+      cardsContainer.innerHTML = '';
+      cardsData.forEach(({title, text}) => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `<h3>${title}</h3><p>${text}</p>`;
+        card.addEventListener('click', () => expandCard(card, title, text));
+        cardsContainer.appendChild(card);
+      });
+    }
+
+    startBtn.addEventListener('click', () => {
+      mainContainer.classList.add('hide');
+      headerIsland.style.display = 'block';
+      cardsContainer.style.display = 'grid';
+      if (!cardsContainer.hasChildNodes()) createCards();
+    });
+
+    headerIsland.addEventListener('click', (e) => {
+      e.stopPropagation();
+      headerIsland.classList.toggle('expanded');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!headerIsland.contains(e.target)) headerIsland.classList.remove('expanded');
+    });
+
+    function expandCard(cardEl, title, text) {
+      if (expandedCard) return;
+
+      const rect = cardEl.getBoundingClientRect();
+
+      const original = {
+        position: cardEl.style.position,
+        top: cardEl.style.top,
+        left: cardEl.style.left,
+        width: cardEl.style.width,
+        height: cardEl.style.height,
+        zIndex: cardEl.style.zIndex,
+        transform: cardEl.style.transform,
+        transition: cardEl.style.transition,
+      };
+
+      cardEl.dataset.originalStyle = JSON.stringify(original);
+
+      cardEl.style.position = "fixed";
+      cardEl.style.top = rect.top + "px";
+      cardEl.style.left = rect.left + "px";
+      cardEl.style.width = rect.width + "px";
+      cardEl.style.height = rect.height + "px";
+      cardEl.style.zIndex = 100;
+      cardEl.style.margin = 0;
+      cardEl.style.transition = "all 0.3s ease";
+      cardEl.style.transform = "none";
+      cardEl.classList.add("expanded-card");
+
+      cardEl.innerHTML = `<h3>${title}</h3><p>${text}</p>`;
+
+      overlay.classList.add("active");
+
+      requestAnimationFrame(() => {
+        cardEl.style.top = "50%";
+        cardEl.style.left = "50%";
+        cardEl.style.width = "80%";
+        cardEl.style.height = "auto";
+        cardEl.style.transform = "translate(-50%, -50%)";
+      });
+
+      expandedCard = cardEl;
+    }
+
+    function closeExpandedCard() {
+      if (!expandedCard) return;
+
+      const cardEl = expandedCard;
+      const original = JSON.parse(cardEl.dataset.originalStyle);
+
+      cardEl.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+      cardEl.style.transform += " scale(0.95)";
+      cardEl.style.opacity = "0.7";
+
+      overlay.classList.remove("active");
+
+      setTimeout(() => {
+        cardEl.style.position = original.position || "";
+        cardEl.style.top = original.top || "";
+        cardEl.style.left = original.left || "";
+        cardEl.style.width = original.width || "";
+        cardEl.style.height = original.height || "";
+        cardEl.style.zIndex = original.zIndex || "";
+        cardEl.style.transform = original.transform || "none";
+        cardEl.style.transition = original.transition || "";
+        cardEl.style.opacity = "1";
+        cardEl.classList.remove("expanded-card");
+        expandedCard = null;
+      }, 300);
+    }
+
+    overlay.addEventListener('click', closeExpandedCard);
+
+    // Animação do botão mudar fundo no scroll
+    let isShrinked = false;
+    window.addEventListener('scroll', () => {
+      if(window.scrollY > 10 && !isShrinked) {
+        bottomBar.classList.add('shrink');
+        isShrinked = true;
+      } else if(window.scrollY <= 10 && isShrinked) {
+        bottomBar.classList.remove('shrink');
+        isShrinked = false;
+      }
+    });
+  </script>
+</body>
+</html>
